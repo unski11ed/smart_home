@@ -1,0 +1,32 @@
+.tempsWrap {
+    max-width: 360px;
+    color: white;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.tempContainer {
+    margin-bottom: 40px;
+}
+
+.tempName {
+    font-weight: lighter;
+
+    > * {
+        margin-left: 10px;
+        font-size: 12px;
+        color: #F5F5F5;
+    }
+}
+
+.tempValue {
+    font-size: 32px;
+    font-weight: 400;
+}
+
+.tempUnit {
+    margin-left: 10px;
+    font-size: 20px;
+}
