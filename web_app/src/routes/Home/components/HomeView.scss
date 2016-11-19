@@ -13,6 +13,7 @@
 
 .tempName {
     font-weight: lighter;
+    margin: 0;
 
     > * {
         margin-left: 10px;
@@ -29,4 +30,19 @@
 .tempUnit {
     margin-left: 10px;
     font-size: 20px;
+}
+
+.tempEntry > * {
+    display: block;
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.tempEntry {
+    .statName {
+        font-weight: bold;
+    }
+    .statValue {
+        margin-left: 10px;
+    }
 }

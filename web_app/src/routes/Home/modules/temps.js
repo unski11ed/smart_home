@@ -7,22 +7,26 @@ const firebase = getFirebase();
 // ------------------------------------
 export const START_LISTENING = 'temps/START_LISTENING';
 export const TEMP_RECEIVED = 'temps/TEMP_RECEIVED';
-export const SET_INITIAL_TEMPS = 'temps/SET_INITIAL_TEMPS';
+export const SET_INITIAL_BOARDS = 'temps/SET_INITIAL_BOARDS';
 
 // ------------------------------------
 // Actions
 // ------------------------------------
 export function startListening () {
     return (dispatch, getState) => {
-        firebase.database().ref('temperatures').on('child_changed', snapshot => {
-            dispatch(tempReceived(snapshot.key, snapshot.val()));
+        /*firebase.database().ref('boards').on('child_changed', snapshot => {
+            const boards = snapshot.val();
+            dispatch(setBoardsNode(boards));
         });
+*/      const updateState = snapshot => {
+            const boards = snapshot.val();
+            dispatch(setBoardsNode(boards));
+        };
 
-        firebase.database().ref('temperatures').once('value').then(snapshot => {
-            const temps = snapshot.val();
-            const tempsArray = _.values(temps);
-            dispatch(setInitialTemps(tempsArray));
-        });
+        const boardsRef = firebase.database().ref('boards');
+
+        boardsRef.on('value', snapshot => updateState(snapshot))
+        boardsRef.once('value', snapshot => updateState(snapshot));
     };
 }
 
@@ -34,10 +38,10 @@ export function tempReceived(tempKey, tempVal) {
     };
 }
 
-export function setInitialTemps(temps) {
+export function setBoardsNode(boards) {
     return {
-        type: SET_INITIAL_TEMPS,
-        temps
+        type: SET_INITIAL_BOARDS,
+        boards
     }
 }
 
@@ -56,7 +60,7 @@ const ACTION_HANDLERS = {
         copiedTemps[action.tempKey] = action.tempVal;
         return Object.assign({}, state, { temps: copiedTemps })
     },
-    [SET_INITIAL_TEMPS]: (state, action) => Object.assign({}, state, { temps: action.temps })
+    [SET_INITIAL_BOARDS]: (state, action) => Object.assign({}, state, { boards: action.boards })
 }
 
 // ------------------------------------
