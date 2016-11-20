@@ -1,13 +1,13 @@
 .tempsWrap {
     max-width: 360px;
     color: white;
-    position: relative;
+    /*position: relative;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);*/
 }
 
-.tempContainer {
+.tempContainer:not(:last-child) {
     margin-bottom: 40px;
 }
 

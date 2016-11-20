@@ -26,7 +26,7 @@ export function startListening () {
         const boardsRef = firebase.database().ref('boards');
 
         boardsRef.on('value', snapshot => updateState(snapshot))
-        boardsRef.once('value', snapshot => updateState(snapshot));
+        boardsRef.once('value').then(snapshot => updateState(snapshot));
     };
 }
 

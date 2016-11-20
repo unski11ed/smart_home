@@ -36,10 +36,12 @@ const renderTemp = (temp, index) => (
 );
 
 const containerStyle = {
-    width: '100%',
-    height: '100%',
     backgroundColor: '#42A5F5',
-    padding: '0 30px'
+    padding: '30px',
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
 };
 
 class HomeContainer extends React.Component {
