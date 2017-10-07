@@ -1,33 +1,30 @@
 #include <ESP8266WiFi.h>
-#include <FirebaseArduino.h>										//Obsługa FireBase
-#include <OneWire.h>												//Obsługa 1Wire
+#include <FirebaseArduino.h>										  //Obsługa FireBase
+#include <OneWire.h>												      //Obsługa 1Wire
 #include <DallasTemperature.h>										//Obsługa DS18B20
 #include <Arduino.h>
-#include <TimeLib.h>												//Biblioteka czasu
-#include <NtpClientLib.h>											//Biblioteka czasu z internetu
+#include <TimeLib.h>												      //Biblioteka czasu
+#include <NtpClientLib.h>											    //Biblioteka czasu z internetu
 
-#include <DNSServer.h>												//AP konfiguracja
-#include <ESP8266WebServer.h>										//konfiguracja WIFI
-#include <WiFiManager.h>                                            //https://github.com/tzapu/WiFiManager
+#include <DNSServer.h>												    //AP konfiguracja
+#include <ESP8266WebServer.h>										  //konfiguracja WIFI
+#include <WiFiManager.h>                          //https://github.com/tzapu/WiFiManager
 
 
 // Set these to run example.
-#define FIREBASE_HOST "tempa-98a16.firebaseio.com"//"test-71b9d.firebaseio.com"					//Projekt FireBase
-#define FIREBASE_AUTH "lO7qMyw0NpgOREqqgw5XFy4t5wLIc1obA0yoj6GV"//"9r4Waoedc1Bdijrc3ezuoRaLsfl4bQLg2AKTZAcS"	//klucz
-//#define WIFI_SSID "MMMAKUPC"
-//#define WIFI_PASSWORD "Aleksandra2003"
-#define BOARD_ID "TEMPY_DOL"										//Unikalne ID Płytki. UWAGA: Inne dla każdej płytki!!!
+#define FIREBASE_HOST "temperatury-870d5.firebaseio.com"					//Projekt FireBase
+#define FIREBASE_AUTH "<<<<<WPISAC TU KLUCZ Z FIREBASE>>>>>"    	//klucz
+#define BOARD_ID "TEMPY_DOL"										                  //Unikalne ID Płytki. UWAGA: Inne dla każdej płytki!!!
 
-#define ONEWIRE_PIN 4												//Pin do którego podłączony jest DS18B20
-#define MAX_TEMPS 10												//Ile czujników maksymalnie
+#define ONEWIRE_PIN 4												                      //Pin do którego podłączony jest DS18B20
+#define MAX_TEMPS 10												                      //Ile czujników maksymalnie
 
-OneWire onewire(ONEWIRE_PIN);										//Konfiguracja 1Wire
-DallasTemperature sensors(&onewire);								//Konfiguracja sensorów
+OneWire onewire(ONEWIRE_PIN);										                  //Konfiguracja 1Wire
+DallasTemperature sensors(&onewire);								              //Konfiguracja sensorów
 
 String rootPath = String("/boards/") + String(BOARD_ID);
 int devicesCount = 0;
 float oldTemps[MAX_TEMPS];
-//String textold;
 
 String deviceAddrToString(DeviceAddress addr) {
 	String outputAddr = "";
@@ -39,14 +36,8 @@ String deviceAddrToString(DeviceAddress addr) {
 }
 
 void setup() {
-	Serial.begin(115200);												//Start Rs232
-	//WiFi.begin(WIFI_SSID, WIFI_PASSWORD);								//Start WIFI
-	//Serial.print(F("connecting"));									//
-	//while (WiFi.status() != WL_CONNECTED) {							//Traw łaczenie
-	//Serial.print(F("."));											//
-	//delay(500);														//
-	//}
-	
+Serial.begin(115200);												                      //Start Rs232
+ 
 	//WiFiManager
 	//Local intialization. Once its business is done, there is no need to keep it around
 	WiFiManager wifiManager;
@@ -64,68 +55,39 @@ void setup() {
 	wifiManager.autoConnect(configSSID.c_str());
 	//or use this for auto generated name ESP + ChipID
 	//wifiManager.autoConnect();
-	
-	//Serial.println();													//
-	//Serial.print(F("connected: "));									//Podłaczony do WIFI
-	//Serial.println(WiFi.localIP());									//Przyznany IP
 
-	sensors.begin();													//Start DS18b20
-	devicesCount = sensors.getDeviceCount();							//Ile podłaczonych DS18B20
+	sensors.begin();													                    //Start DS18b20
+	devicesCount = sensors.getDeviceCount();							        //Ile podłaczonych DS18B20
 	
 	Serial.print(F("Znaleziono termometr: "));
 	Serial.println(devicesCount, DEC);
 	
 	
 	
-	NTP.onNTPSyncEvent([](NTPSyncEvent_t error) {					//Podłaczenie sysnchronizacji czasu
-		if (error) {													//Bład
+	NTP.onNTPSyncEvent([](NTPSyncEvent_t error) {					        //Podłaczenie sysnchronizacji czasu
+		if (error) {													                      //Bład
 			Serial.print("Time Sync error: ");
 			if (error == noResponse)
 			Serial.println("NTP server not reachable");
 			else if (error == invalidAddress)
 			Serial.println("Invalid NTP server address");
 		}
-		else {																//Synchronizacja ok
+		else {																                      //Synchronizacja ok
 			Serial.print("Got NTP time: ");
 			Serial.println(NTP.getTimeDateString(NTP.getLastNTPSync()));
 			Firebase.setString(rootPath + F("/accessTime"), NTP.getTimeDateString());
 		}
 	});
-	NTP.begin("pl.pool.ntp.org", 1, true);								//start odzcytu czasu i daty z serwera
-	NTP.setInterval(1800);												//co jaki czas powtórzać
-	
-	//Serial.print(F("Czas: "));
-	//Serial.println(NTP.getTimeDateString());
-
+	NTP.begin("pl.pool.ntp.org", 1, true);								        //start odzcytu czasu i daty z serwera
+	NTP.setInterval(1800);												                //co jaki czas powtórzać
 	
 	Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
 	Firebase.setInt(rootPath + F("/devicesCount"), devicesCount);
-	//Firebase.setString(F("CONNECTED/SSID"), getSSID());
 	Firebase.setString(rootPath + F("/boardId"), BOARD_ID);
 	Firebase.setString(rootPath + F("/connectedIp"), String(WiFi.localIP().toString()));
-	//Firebase.setString(F("CZAS"), timeClient.getFormattedTime());
 }
 
 void loop() {
-	/*
-	String text = (Firebase.getString(F("text")));
-	if (Firebase.failed()) {
-	Serial.println(F("Failed to get string value:"));
-	//Serial.println(Firebase.error());
-	return;
-	}
-	
-	
-	if(text != "?"){
-	Serial.println(text);
-	Firebase.setString(F("text"), "?");
-	if (Firebase.failed()) {
-	Serial.println(F("Failed to set string value:"));
-	//Serial.println(Firebase.error());
-	return;
-	}
-	}
-	*/
 	if(devicesCount > 0) {
 		sensors.requestTemperatures();
 
@@ -148,7 +110,7 @@ void loop() {
 				
 				if (Firebase.failed()) {
 					Serial.println(F("Failed to set temp value:"));
-					//Serial.println(Firebase.error());
+					Serial.println(Firebase.error());
 					return;
 				}
 				
@@ -156,7 +118,7 @@ void loop() {
 				
 				if (Firebase.failed()) {
 					Serial.println(F("Failed to set temp address:"));
-					//Serial.println(Firebase.error());
+					Serial.println(Firebase.error());
 					return;
 				}
 				
@@ -164,7 +126,7 @@ void loop() {
 				Firebase.setString(pathTime, NTP.getTimeDateString());
 				if (Firebase.failed()) {
 					Serial.println(F("Failed to set CZAS POM:"));
-					//Serial.println(Firebase.error());
+					Serial.println(Firebase.error());
 					return;
 				}
 				

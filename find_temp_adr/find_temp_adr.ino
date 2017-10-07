@@ -22,6 +22,7 @@ void setup() {
 }
 
 void loop() {
+  Serial.print("sdfgsfg");
   DeviceAddress adr;
   
   if(sensors.getAddress(adr, 0)) {
